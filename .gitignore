@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+*.pyo
+*.json
+*.mp4
+*.mp3
+*.wav
+*.png
+!UI_Screenshot.png
+*.jpg
+.DS_Store
+*/output
