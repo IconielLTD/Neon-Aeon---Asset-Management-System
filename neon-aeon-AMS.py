@@ -184,11 +184,11 @@ class NeonAeonManager:
         path_entry.pack(side="left", fill="x", expand=True, padx=5)
         path_entry.insert(0, track.get("path", ""))
         path_entry.bind("<KeyRelease>", lambda e: self.update_audio_track(act_idx, scene_idx, track_idx, "path", path_entry.get()))
-        
+
         ctk.CTkButton(
             track_frame,
             text="Browse",
-            command=lambda: self.browse_file(path_entry),
+            command=lambda: self.browse_audio_file(act_idx, scene_idx, track_idx, path_entry),
             width=80
         ).pack(side="left", padx=5)
         
@@ -329,20 +329,7 @@ class NeonAeonManager:
             width=80
         ).pack(side="left")
         
-        audio_frame = ctk.CTkFrame(parent, fg_color="transparent")
-        audio_frame.pack(fill="x", pady=2)
-        
-        audio_entry = ctk.CTkEntry(audio_frame, placeholder_text="Dialogue audio file path")
-        audio_entry.pack(side="left", fill="x", expand=True, padx=(0, 5))
-        audio_entry.insert(0, node.get("dialogueAudio", ""))
-        audio_entry.bind("<KeyRelease>", lambda e: self.update_node_field(act_idx, scene_idx, node_idx, "dialogueAudio", audio_entry.get()))
-        
-        ctk.CTkButton(
-            audio_frame,
-            text="Browse",
-            command=lambda: self.browse_file_for_entry(audio_entry, act_idx, scene_idx, node_idx, "dialogueAudio"),
-            width=80
-        ).pack(side="left")
+        # Removed the dialogue audio section completely
         
         text_box = ctk.CTkTextbox(parent, height=60)
         text_box.pack(fill="x", pady=2)
@@ -439,10 +426,10 @@ class NeonAeonManager:
         if node_type == "video":
             node["videoPath"] = ""
             node["dialogueText"] = ""
-        else:
+        else:  # dialogue/image node
             node["imagePath"] = ""
-            node["dialogueAudio"] = ""
             node["dialogueText"] = ""
+            # Removed dialogueAudio field
         
         scene["nodes"].append(node)
         self.refresh_ui()
@@ -504,7 +491,9 @@ class NeonAeonManager:
         self.project["acts"][act_idx]["scenes"][scene_idx]["nodes"][node_idx][field] = value
     
     def update_audio_track(self, act_idx: int, scene_idx: int, track_idx: int, field: str, value: str):
+        print(f"Updating audio track: act={act_idx}, scene={scene_idx}, track={track_idx}, field={field}, value={value}")
         self.project["acts"][act_idx]["scenes"][scene_idx]["audioTracks"][track_idx][field] = value
+        print(f"Updated track: {self.project['acts'][act_idx]['scenes'][scene_idx]['audioTracks'][track_idx]}")
     
     def update_choice_field(self, act_idx: int, scene_idx: int, node_idx: int, choice_idx: int, field: str, value: str):
         self.project["acts"][act_idx]["scenes"][scene_idx]["nodes"][node_idx]["choices"][choice_idx][field] = value
@@ -514,6 +503,18 @@ class NeonAeonManager:
         if filename:
             entry_widget.delete(0, "end")
             entry_widget.insert(0, filename)
+
+    def browse_audio_file(self, act_idx: int, scene_idx: int, track_idx: int, entry_widget):
+        filename = filedialog.askopenfilename(
+            filetypes=[
+                ("Audio files", "*.ogg *.mp3 *.wav *.flac"),
+                ("All files", "*.*")
+            ]
+        )
+        if filename:
+            entry_widget.delete(0, "end")
+            entry_widget.insert(0, filename)
+            self.update_audio_track(act_idx, scene_idx, track_idx, "path", filename)
     
     def browse_file_for_entry(self, entry_widget, act_idx: int, scene_idx: int, node_idx: int, field: str):
         filename = filedialog.askopenfilename()
